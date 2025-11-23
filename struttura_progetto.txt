@@ -1,0 +1,411 @@
+STRUTTURA PROGETTO TURNIFY (AGGIORNATA)
+
+==================================================
+1. SCOPO
+==================================================
+Applicazione web (HTML/CSS/JavaScript puro) per pianificare turni su 14 giorni (2 settimane) usando esclusivamente il browser.
+Tutti i dati (anagrafiche e vincoli) sono salvati in LocalStorage (chiave: "gestoreTurni_data"), il planning generato in una chiave separata ("gestoreTurni_planning").
+Esportazione e ri-importazione avvengono in JSON.
+
+Moduli funzionali:
+- RUOLI: definizione capacità richieste e priorità.
+- DIPENDENTI: profilo, ruoli abilitatI, indisponibilità e ore settimanali.
+- TURNI: fasce orarie e ruoli ammessi.
+- VINCOLI: regole globali e override per singolo dipendente.
+- GENERATORE: crea assegnazioni coerenti 14 giorni consecutivi secondo una strategia scelta.
+- MATRICE: tabella riepilogativa ore nette e coperture.
+
+==================================================
+2. MODELLO DATI PRINCIPALE (LocalStorage: gestoreTurni_data)
+==================================================
+Oggetto radice:
+{
+  "ruoli": Role[],
+  "dipendenti": Employee[],
+  "turni": Shift[],
+  "vincoli": Constraints
+}
+
+--------------------------------------------------
+2.1 RUOLI (Role)
+--------------------------------------------------
+Campi:
+- id: number (unico)
+- nome: string (etichetta visuale)
+- colore: string (hex usato per pill e cella di planning)
+- minDipendenti: number (copertura minima per ogni occorrenza del ruolo nel turno)
+- maxDipendenti: number (limite massimo di assegnazioni)
+- livello: number (priorità gerarchica: valori più ALTI = gestiti prima nella generazione)
+
+Utilizzo:
+Durante la generazione ogni turno elenca i ruoliPossibili; questi vengono ordinati per livello decrescente e assegnati in quell'ordine.
+
+--------------------------------------------------
+2.2 DIPENDENTI (Employee)
+--------------------------------------------------
+Campi:
+- id: number
+- nome: string
+- ruoli: number[] (lista id ruolo che il dipendente può coprire)
+- oreSettimanali: number (budget ore lavorabili nette su 7 giorni)
+- importanza: number (1..5; usata nella strategia "priority": valori PIÙ BASSI hanno precedenza)
+- indisponibilita: { giorno: string, da: HH:MM, a: HH:MM }[] (finestre orarie NON lavorabili sul giorno indicato)
+- feriePermessi: { data: YYYY-MM-DD, tipo: string }[] (non ancora integrati nel generatore attuale)
+
+Logica:
+Un dipendente è candidato se possiede il ruolo richiesto e non viola: ore giornaliere massime, ore settimanali, riposo minimo tra fine di ultimo turno e inizio nuovo, indisponibilità sul giorno.
+
+--------------------------------------------------
+2.3 TURNI (Shift)
+--------------------------------------------------
+Campi:
+- id: number
+- nome: string (es. "Mattina")
+- colore: string (hex, usato per tag)
+- inizio: HH:MM
+- fine: HH:MM (se fine <= inizio si considera passaggio a giorno successivo)
+- ruoliPossibili: number[] (insieme di ruoli che possono essere presenti in questo turno; ciascuno verrà processato e popolato con assegnazioni)
+
+Durata e Pausa:
+La durata (in minuti) è calcolata; se supera vincoli.pausaDopoOre viene sottratta una pausa fissa (durataPausaMinuti) dal conteggio delle ore nette accumulate.
+
+--------------------------------------------------
+2.4 VINCOLI (Constraints)
+--------------------------------------------------
+Struttura:
+{
+  riposoMinimoOre: number,               // ore tra fine turno precedente e nuovo turno (default 11)
+  oreMassimeGiornaliereDefault: number,  // limite ore nette giornaliere (default 8)
+  pausaDopoOre: number,                  // soglia ore per applicare pausa (default 6)
+  durataPausaMinuti: number,             // minuti sottratti alle ore nette (default 30)
+  perDipendente: {
+    [dipId: string]: {
+      oreMassimeGiornaliere?: number,
+      oreMassimeSettimanali?: number,
+      riposoMinimoOre?: number
+    }
+  }
+}
+
+Override:
+Se presente un valore personalizzato in perDipendente prevale sul corrispondente globale.
+
+==================================================
+3. PLANNING GENERATO (LocalStorage: gestoreTurni_planning)
+==================================================
+Salvato come:
+{
+  startDate: YYYY-MM-DD (lunedì iniziale o scelto),
+  planning: {
+    [dataISO: string]: Assignment[]
+  },
+  generatedAt: ISODateTime
+}
+
+Assignment:
+{
+  dipendente: string | "Non Coperto",
+  dipendenteId: number | null,
+  turno: string,
+  ruolo: string,
+  colore: string (colore ruolo),
+  inizio: HH:MM,
+  fine: HH:MM,
+  warning?: true (presente se slot non coperto)
+}
+
+Visualizzazione matrice:
+Tabella per settimana con colonne: Dipendente (ore lavorate/ore previste), Domenica, Lunedì, ..., Sabato.
+Righe per tutti i dipendenti (anche senza assegnazioni), con ore nette/ore settimanali.
+Pill tag per assegnazioni: turno · ruolo (inizio-fine), colore ruolo con testo contrastante.
+
+==================================================
+4. ALGORITMO DI ASSEGNAZIONE
+==================================================
+Nuovo algoritmo per settimana (14 giorni divisi in 2 settimane):
+1. Calcolo numero giorni di lavoro per dipendente: oreSettimanali / oreGiornaliere (arrotondato su).
+2. Calcolo persone per ruoli: usa minDipendenti per ruolo.
+3. Ordinamento dipendenti per importanza crescente (1 prima), assicurando che importanza 1 abbia almeno un importanza 2 con lui.
+4. Lettura vincoli globali e per dipendente.
+5. Assegnazione partendo dal ruolo con meno minDipendenti: assegna numero minimo di dipendenti, poi passa al ruolo successivo.
+6. Persone senza ore settimanali complete vanno in fondo (gestito nell'ordinamento).
+7. Cambio turno ogni settimana: alterna turni disponibili per settimana.
+
+Per ogni giorno della settimana:
+- Seleziona turno basato su settimana (shiftIndex = settimana % numeroTurni).
+- Assegna ruoli in ordine di minDipendenti crescente.
+- Per ogni ruolo, assegna fino a minDipendenti da candidati ordinati.
+- Se non abbastanza, aggiungi "Non Coperto".
+- Aggiorna stato minuti giornalieri/settimanali, ultimo fine turno.
+
+Calcolo minuti: come prima, con pausa se supera soglia.
+
+==================================================
+5. COMPONENTI UI PRINCIPALI
+==================================================
+- Dashboard: mostra metriche (conteggi ruoli, dipendenti, turni, vincoli personalizzati) e form generazione planning.
+- Modali/Overlay form: ruoli, dipendenti, turni (apertura blocca lo scroll: classe body.no-scroll).
+- Vincoli: card per regole globali + lista override.
+- Matrice planning: tabella per settimane con ore nette per dipendente e pill tag per ogni assegnazione.
+- Messaggi: elementi .app-message per feedback (success, warning, error, info) senza finestre modal native.
+
+==================================================
+6. ESPORTAZIONE / IMPORTAZIONE
+==================================================
+Esportazione dati: JSON unico da gestoreTurni_data.
+Esportazione planning: JSON separato da gestoreTurni_planning.
+Entrambi scaricati creando Blob e link temporaneo.
+
+==================================================
+7. COLORI E ACCESSIBILITÀ
+==================================================
+Funzione getReadableTextColor(hex) garantisce contrasto minimo cambiando testo in nero o bianco a seconda della luminanza.
+Palette UI monocromatica chiara (sfondi grigio chiaro, testo nero) per coerenza visiva.
+
+==================================================
+8. ESTENSIONI FUTURE (IDEe)
+==================================================
+- Gestione feriePermessi nel generatore (escludere automaticamente date).
+- Validazioni extra: sovrapposizioni turni per dipendente, saturazione ore settimanali prima della generazione.
+- Report PDF del planning.
+- Modalità modifica manuale post-generazione con ricalcolo warning.
+
+==================================================
+9. FUNZIONAMENTO
+==================================================
+Dettaglio del processo di generazione planning in index.js:
+
+--------------------------------------------------
+9.1 INIZIALIZZAZIONE
+--------------------------------------------------
+Al caricamento pagina (DOMContentLoaded):
+- initDashboard() imposta data default (prossimo lunedì)
+- renderMetrics() mostra contatori da LocalStorage
+- renderPlanningMatrix() carica e visualizza planning salvato (se esiste)
+- Registra event listener per pulsanti: Genera, Scarica, Pulisci
+
+--------------------------------------------------
+9.2 GENERAZIONE PLANNING (generatePlanning)
+--------------------------------------------------
+Quando l'utente clicca "Genera 2 settimane":
+
+1. VALIDAZIONE INPUT
+   - Verifica presenza data di partenza
+   - Controlla esistenza ruoli, turni, dipendenti in database
+   - Se manca qualcosa mostra messaggio warning e blocca
+
+2. CREAZIONE RANGE DATE
+   - createDateRange() genera array di 14 Date consecutive dalla data scelta
+   - Ogni Date oggetto rappresenta un giorno da pianificare
+
+3. INIZIALIZZAZIONE STATO GLOBALE
+   - weeklyMinutes: Map<numeroSettimana, Map<dipendenteId, minutiAccumulati>>
+     Traccia ore settimanali per verificare limite oreSettimanali
+   - dailyMinutes: Map<dataISO, Map<dipendenteId, minutiGiornalieri>>
+     Traccia ore giornaliere per verificare limite oreGiornaliere
+   - lastAssignmentEnd: Map<dipendenteId, timestampFine>
+     Memorizza fine ultimo turno per calcolare riposo minimo
+   - currentWeek: 0 o 1 (settimana corrente nel ciclo di 14 giorni)
+
+4. LOOP SUI 14 GIORNI
+   Per ogni giorno nell'array dates:
+   
+   a) PREPARAZIONE CONTESTO GIORNO
+      - Estrae dayKey (YYYY-MM-DD ISO string)
+      - Calcola dayName (domenica, lunedì, ... usando getDay())
+      - Determina currentWeek (0 per giorni 0-6, 1 per giorni 7-13)
+      - Inizializza planning[dayKey] come array vuoto
+   
+   b) CHIAMATA ALGORITMO SETTIMANA
+      - Invoca generateWeekPlanning(db, dayKey, dayName, state)
+      - Riceve array di Assignment per quel giorno
+      - Assegna risultato a planning[dayKey]
+
+5. SALVATAGGIO E VISUALIZZAZIONE
+   - Crea oggetto stored: { startDate, planning, generatedAt }
+   - savePlanning() serializza in JSON e scrive in localStorage chiave gestoreTurni_planning
+   - renderPlanningMatrix(stored) costruisce HTML tabellare
+   - Aggiorna status chip e mostra messaggio successo
+
+--------------------------------------------------
+9.3 ALGORITMO GIORNALIERO (generateWeekPlanning)
+--------------------------------------------------
+Logica core per assegnare turni in un singolo giorno:
+
+1. ARRICCHIMENTO DIPENDENTI
+   - Mappa db.dipendenti aggiungendo campo giorniLavoro
+   - giorniLavoro = ceil(oreSettimanali / oreGiornaliere)
+   - Esempio: 40h settimanali / 8h giornaliere = 5 giorni lavoro
+
+2. PREPARAZIONE RUOLI
+   - Mappa db.ruoli creando roleRequirements
+   - Ogni ruolo ottiene campo required = minDipendenti || 1
+   - Indica quante persone servono per coprire quel ruolo
+
+3. ORDINAMENTO DIPENDENTI PER IMPORTANZA
+   - Raggruppa dipendenti per livello importanza (1, 2, 3, 4, 5)
+   - Ordina gruppi in ordine crescente (1 = massima priorità)
+   - Mix strategico: se esiste importanza 1, inserisce un importanza 2 prima
+     Questo garantisce equilibrio tra senior (1) e junior (2+)
+   - Produce sortedEmployees: array ordinato per priorità assegnazione
+
+4. SELEZIONE TURNO SETTIMANALE
+   - Ordina turni disponibili per orario inizio
+   - shiftIndex = currentWeek % numeroTurni
+   - Alterna turno ogni settimana (settimana 0 usa turno[0], settimana 1 usa turno[1], ecc.)
+   - Questo implementa rotazione automatica turni
+
+5. ORDINAMENTO RUOLI PER SCARSITÀ
+   - Ordina roleRequirements per campo required crescente
+   - Ruoli con meno dipendenti richiesti vengono assegnati per primi
+   - Garantisce copertura prioritaria ruoli critici con poche risorse
+
+6. LOOP ASSEGNAZIONE RUOLI
+   Per ogni ruolo in sortedRoles:
+   
+   a) FILTRAGGIO CANDIDATI
+      - candidates = dipendenti che possiedono quel ruolo.id in array ruoli
+      - Mantiene ordine importanza da step 3
+   
+   b) TENTATIVO ASSEGNAZIONE
+      Per ogni candidato finché assigned < required:
+      
+      i) VERIFICA ELEGGIBILITÀ (canWorkEmployee)
+         Controlla vincoli:
+         - Possiede ruolo richiesto
+         - Non supera ore giornaliere: dayMinutes + shiftMinutes <= oreGiornaliere
+         - Non supera ore settimanali: weekMinutes + shiftMinutes <= oreSettimanali
+         - Riposo minimo rispettato: ore da ultimo fine turno >= riposoMinimoOre
+         - Non in indisponibilità: nessuna sovrapposizione con periodi bloccati
+      
+      ii) CREAZIONE ASSIGNMENT
+         Se eleggibile:
+         - Crea oggetto Assignment con dati dipendente, turno, ruolo, orari
+         - Aggiunge a array assignments
+         - Chiama updateStateAfterAssignment() per aggiornare contatori stato
+      
+      iii) AGGIORNAMENTO STATO
+         updateStateAfterAssignment() modifica:
+         - dailyMinutes: accumula minuti per (dayKey, employeeId)
+         - weeklyMinutes: accumula minuti per (weekIndex, employeeId)
+         - lastAssignmentEnd: registra timestamp fine turno
+         Questi dati vengono usati nei cicli successivi per verificare vincoli
+      
+      iv) INCREMENT COUNTER
+         assigned++ per tracciare copertura ruolo
+   
+   c) RIEMPIMENTO BUCHI
+      Se assigned < required dopo loop candidati:
+      - Crea Assignment con dipendente="Non coperto", dipendenteId=null, warning=true
+      - Ripete finché assigned raggiunge required
+      - Segnala visualmente slot non coperti nella matrice
+
+7. RITORNO ASSIGNMENTS
+   - Restituisce array completo di Assignment per il giorno
+   - Ogni Assignment rappresenta (dipendente X lavora ruolo Y nel turno Z dalle HH:MM alle HH:MM)
+
+--------------------------------------------------
+9.4 RENDERING MATRICE (renderPlanningMatrix)
+--------------------------------------------------
+Costruzione HTML tabellare dal planning salvato:
+
+1. CARICAMENTO DATI
+   - Recupera planning da localStorage o usa preloadedPlanning
+   - Legge database per vincoli pausa e lista dipendenti
+   - Converte planning object in entries array [(date, assignments), ...]
+   - Ordina entries per data ISO crescente
+
+2. SUDDIVISIONE SETTIMANE
+   - Divide entries in chunk da 7 giorni
+   - weeks = [settimana1[7 giorni], settimana2[7 giorni]]
+
+3. GENERAZIONE HTML SETTIMANE
+   Per ogni week invoca buildWeekMatrix():
+   
+   a) MAPPING GIORNI-DATE
+      - Crea dayDateMap: { "Lunedì": "2025-11-24", "Martedì": "2025-11-25", ... }
+      - Usa getDay() per convertire Date in nome giorno
+   
+   b) AGGREGAZIONE RIGHE
+      - Crea rowsMap: Map<employeeId|"missing-ruolo", rowData>
+      - rowData = { label, minutes, dayAssignments: {date: [assignments]}, expectedHours }
+      - Per ogni assignment:
+        * Se dipendenteId esiste: accumula minuti netti (con pausa se > pausaDopoOre)
+        * Raggruppa per data in dayAssignments
+      - Aggiunge dipendenti senza assegnazioni con minutes=0
+   
+   c) ORDINAMENTO ALFABETICO
+      - Converte rowsMap in array e ordina per label (nome dipendente)
+      - Garantisce visualizzazione consistente
+   
+   d) COSTRUZIONE TABELLA HTML
+      i) HEADER
+         - Prima colonna: "Dipendente (ore lavorate/ore previste)"
+         - Colonne giorni: Domenica, Lunedì, ..., Sabato
+      
+      ii) RIGHE DIPENDENTI
+         Per ogni row:
+         - Cella nome: label + formatHoursLabel(minutes, expectedHours)
+           Esempio: "Mario (24.5/40h)"
+         - Celle giorni: per ogni giorno della settimana
+           * Se assignment esiste: genera pill tag colorata
+             <span> con background=role.colore, text=contrastColor
+             Contenuto: "turno · ruolo (HH:MM-HH:MM)"
+           * Se nessuna assignment: cella con "-"
+      
+      iii) WRAPPER
+         - Avvolge in .matrix-week con titolo "Settimana N · startDate → endDate"
+         - Table wrapper per scroll orizzontale su schermi piccoli
+
+4. ASSEMBLAGGIO FINALE
+   - Concatena HTML di tutte le settimane
+   - Assegna a innerHTML di dashboardDom.matrixHost
+   - Rendering immediato nel DOM
+
+--------------------------------------------------
+9.5 UTILITÀ SUPPORTO
+--------------------------------------------------
+- getReadableTextColor(hex): calcola luminanza e ritorna #000 o #fff per contrasto
+- minutesBetween(start, end): calcola differenza minuti tra orari, gestisce overnight
+- calculateNetMinutes(assignment, pauseAfter, pauseMinutes): sottrae pausa se turno > soglia
+- formatHoursLabel(minutes, expectedHours): formatta "(X.X/Yh)" per label dipendente
+- canWorkEmployee(): validazione multi-vincolo per eleggibilità assegnazione
+- updateStateAfterAssignment(): aggiornamento atomico stato globale post-assegnazione
+
+--------------------------------------------------
+9.6 GESTIONE VINCOLI
+--------------------------------------------------
+Il sistema rispetta rigorosamente:
+- Ore giornaliere: usa oreGiornaliere dipendente o override o default vincoli
+- Ore settimanali: verifica accumulo minuti per weekIndex
+- Riposo minimo: confronta timestamp fine ultimo turno con inizio nuovo
+- Indisponibilità: blocca assegnazioni in finestre temporali specificate
+- Pausa obbligatoria: sottrae pauseMinutes se turno > pausaDopoOre ore
+- Copertura ruoli: garantisce minDipendenti, segnala "Non coperto" se impossibile
+
+--------------------------------------------------
+9.7 PERSISTENZA DATI
+--------------------------------------------------
+- LocalStorage chiave gestoreTurni_data: ruoli, dipendenti, turni, vincoli
+- LocalStorage chiave gestoreTurni_planning: planning generato con metadata
+- Operazioni atomiche: lettura completa oggetto, modifica, scrittura completa
+- Nessun backend: tutto client-side per massima privacy e velocità
+
+--------------------------------------------------
+9.8 FLUSSO INTERAZIONE UTENTE
+--------------------------------------------------
+1. Utente apre index.html → initDashboard() carica metriche e planning salvato
+2. Utente configura ruoli/dipendenti/turni/vincoli in altre pagine
+3. Utente seleziona data inizio in dashboard
+4. Utente clicca "Genera 2 settimane" → generatePlanning() esegue
+5. Sistema itera 14 giorni chiamando generateWeekPlanning() per ciascuno
+6. Ogni giorno: seleziona turno rotante, assegna ruoli per priorità, verifica vincoli
+7. Planning completo salvato in localStorage
+8. renderPlanningMatrix() costruisce tabelle HTML
+9. Utente vede matrice con dipendenti, ore, turni colorati
+10. Utente può scaricare JSON o pulire planning
+
+==================================================
+FINE DOCUMENTO
+==================================================
+

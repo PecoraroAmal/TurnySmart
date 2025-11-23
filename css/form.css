@@ -1,0 +1,122 @@
+.form-card {
+	background: #f7f7f7;
+	border: 1px solid #e4e4e4;
+	border-radius: var(--card-radius);
+	padding: 24px;
+	box-shadow: var(--shadow-soft);
+	color: #000000;
+}
+
+.form-card h2 {
+	font-size: 1.05rem;
+	margin-bottom: 18px;
+}
+
+.form-grid {
+	display: grid;
+	gap: 16px;
+}
+
+@media (min-width: 900px) {
+	.form-grid.two-columns {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.form-grid.three-columns {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+.form-field {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.form-field label {
+	font-size: 0.85rem;
+	color: #555555;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+	background: #f2f2f2;
+	border: 1px solid #d6d6d6;
+	border-radius: 12px;
+	padding: 12px 14px;
+	color: #000000;
+	font-size: 0.95rem;
+	transition: var(--transition-fast);
+}
+
+.form-field textarea {
+	resize: vertical;
+	min-height: 90px;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+	border-color: #000000;
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+}
+
+.checkbox-group,
+.pill-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.checkbox-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	border-radius: 12px;
+	border: 1px solid #d6d6d6;
+	background: #ececec;
+	cursor: pointer;
+	font-size: 0.85rem;
+	transition: var(--transition-fast);
+}
+
+.checkbox-chip input {
+	accent-color: #000000;
+}
+
+.checkbox-chip:hover,
+.checkbox-chip:has(input:checked) {
+	border-color: #000000;
+	background: #e0e0e0;
+	color: #000000;
+}
+
+.form-actions {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-top: 18px;
+}
+
+.helper-text {
+	font-size: 0.75rem;
+	color: #666666;
+}
+
+.inline-field {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.inline-field input[type="color"] {
+	padding: 0;
+	border-radius: 10px;
+	width: 48px;
+	height: 40px;
+	border: none;
+	cursor: pointer;
+}
