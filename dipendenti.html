@@ -10,22 +10,28 @@
 		crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<link rel="stylesheet" href="css/stile.css" />
 	<link rel="stylesheet" href="css/form.css" />
+	<link rel="icon" type="image/png" href="icons/favicon-96x96.png" sizes="96x96" />
+	<link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
+	<link rel="shortcut icon" href="icons/favicon.ico" />
+	<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+	<meta name="apple-mobile-web-app-title" content="Turnify" />
+	<link rel="manifest" href="icons/site.webmanifest" />
 </head>
 
 <body>
 	<div class="app-shell">
 		<header class="app-header">
 			<div class="brand">
-				<div class="brand-badge"><i class="fa-solid fa-rotate"></i></div>
 				<span>Turnify</span>
 			</div>
 			<nav class="app-nav">
 				<a class="nav-link" href="index.html"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
 				<a class="nav-link" href="ruoli.html"><i class="fa-solid fa-layer-group"></i>Ruoli</a>
-				<a class="nav-link active" href="dipendenti.html"><i class="fa-solid fa-user-group"></i>Dipendenti</a>
 				<a class="nav-link" href="turni.html"><i class="fa-solid fa-business-time"></i>Turni</a>
-				<a class="nav-link" href="vincoli.html"><i class="fa-solid fa-scale-balanced"></i>Vincoli</a>
-				<a class="nav-link" href="indisponibilità.html"><i class="fa-solid fa-calendar-times"></i>Indisponibilità</a>
+				<a class="nav-link active" href="dipendenti.html"><i class="fa-solid fa-user-group"></i>Dipendenti</a>
+				<a class="nav-link" href="indisponibilità.html"><i
+						class="fa-solid fa-calendar-times"></i>Indisponibilità</a>
+				<a class="nav-link" href="planning.html"><i class="fa-solid fa-calendar-check"></i>Planning</a>
 				<a class="nav-link" href="impostazioni.html"><i class="fa-solid fa-gear"></i>Impostazioni</a>
 			</nav>
 		</header>
@@ -33,7 +39,8 @@
 		<main class="page-content">
 			<section class="page-hero">
 				<h1>Team e disponibilità</h1>
-				<p>Gestisci informazioni anagrafiche, ruoli abilitati, esperienza e indisponibilità dei dipendenti per una
+				<p>Gestisci informazioni anagrafiche, ruoli abilitati, esperienza e indisponibilità dei dipendenti per
+					una
 					pianificazione accurata.</p>
 			</section>
 
@@ -43,11 +50,13 @@
 					<div class="card-header">
 						<div>
 							<p class="card-title"><i class="fa-solid fa-users"></i>Dipendenti registrati</p>
-							<p class="card-description">Elenco con ruoli, ore settimanali, esperienza e indisponibilità.</p>
+							<p class="card-description">Elenco con ruoli, ore settimanali, esperienza e indisponibilità.
+							</p>
 						</div>
 						<div class="list-inline">
 							<div class="chip" id="employeeCounter">0 dipendenti</div>
-							<button class="button" id="openEmployeeForm"><i class="fa-solid fa-plus"></i>Nuovo dipendente</button>
+							<button class="button" id="openEmployeeForm"><i class="fa-solid fa-plus"></i>Nuovo
+								dipendente</button>
 						</div>
 					</div>
 					<div id="employeeList" class="grid"></div>
@@ -66,10 +75,13 @@
 			</section>
 		</main>
 
+		<div style="display:flex;justify-content:center;margin:2rem 0;">
+			<a href="https://pecoraroamal.github.io/Personal-Website/contatti.html" target="_blank" class="contact-btn">
+				<i class="fa-solid fa-envelope"></i> Contatti
+			</a>
+		</div>
 		<footer>Turnify · Pianificazione turni smart</footer>
 	</div>
-
 	<script src="js/dipendenti.js" defer></script>
 </body>
-
 </html>

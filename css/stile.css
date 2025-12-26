@@ -1,3 +1,7 @@
+.role-neutral {
+	background: #f3f3f3 !important;
+	color: #000 !important;
+}
 /* Clean rebuilt stylesheet: light palette, black text */
 :root { --bg-primary:#ffffff; --bg-secondary:#f5f5f5; --bg-muted:#ebebeb; --border-color:rgba(0,0,0,0.12); --text-primary:#000000; --text-inverse:#000000; --text-muted:#6f6f6f; --accent:#000000; --card-radius:18px; --transition-fast:150ms ease; --shadow-soft:0 8px 24px rgba(0,0,0,0.12); }
 * { box-sizing:border-box; margin:0; padding:0; }
@@ -17,7 +21,7 @@ img { max-width:100%; display:block; }
 .page-hero h1 { font-size:2rem; margin-bottom:12px; }
 .page-hero p { color:#555; max-width:700px; }
 .page-body { display:flex; flex-direction:column; gap:24px; }
-.card { background:#f7f7f7; border:1px solid #e4e4e4; border-radius:var(--card-radius); padding:24px; box-shadow:var(--shadow-soft); color:var(--text-primary); }
+.card { background:#fff; border:1px solid #e4e4e4; border-radius:var(--card-radius); padding:24px; box-shadow:var(--shadow-soft); color:#111; }
 .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
 .card-title { font-size:1.1rem; font-weight:600; }
 .card-title i { margin-right:10px; color:currentColor; }
@@ -68,4 +72,31 @@ body.no-scroll { overflow:hidden; }
 .confirm-actions .button { flex:0 0 auto; }
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1200; display:flex; align-items:center; justify-content:center; padding:24px; }
 .modal-dialog { max-width:600px; width:100%; max-height:90vh; overflow-y:auto; }
+.metrics-row {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: stretch;
+	gap: 1.5rem;
+	width: 100%;
+}
+.metrics-row .card, .metrics-row .metric-link {
+	flex: 1 1 0;
+	min-width: 0;
+	max-width: none;
+	margin: 0;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
+	transition: box-shadow 0.15s, transform 0.13s, background 0.13s;
+	cursor: pointer;
+}
+.metrics-row .metric-link:hover {
+	background: #e0e7ef;
+	box-shadow: 0 4px 18px 0 rgba(37,99,235,0.10);
+	transform: translateY(-2px) scale(1.03);
+}
 @media (max-width:720px){ .app-header{flex-direction:column; gap:16px; text-align:center;} .app-nav{justify-content:center;} .page-hero{padding:24px;} }

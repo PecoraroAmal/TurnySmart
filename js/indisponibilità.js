@@ -94,13 +94,34 @@ function loadIndisponibilitaForEdit(id) {
 }
 
 function deleteIndisponibilita(id) {
-	if (confirm("Sei sicuro di voler eliminare questa indisponibilità?")) {
+	showConfirm("Eliminare questa indisponibilità?").then((ok) => {
+		if (!ok) return;
 		let indisponibilita = readIndisponibilita();
 		indisponibilita = indisponibilita.filter(i => i.id !== id);
 		saveIndisponibilita(indisponibilita);
 		renderList();
 		showMessage("Indisponibilità eliminata.", "success");
-	}
+	});
+}
+// Conferma modale come nelle altre pagine
+function showConfirm(message) {
+	return new Promise((resolve) => {
+		const overlay = document.createElement("div");
+		overlay.className = "confirm-overlay";
+		overlay.innerHTML = `
+			<div class="confirm-dialog">
+				<h2>Conferma</h2>
+				<p>${message}</p>
+				<div class="confirm-actions">
+					<button class="button danger" id="confirmYes"><i class="fa-solid fa-check"></i>Conferma</button>
+					<button class="button secondary" id="confirmNo"><i class="fa-solid fa-rotate-left"></i>Annulla</button>
+				</div>
+			</div>`;
+		document.body.appendChild(overlay);
+		const cleanup = () => overlay.remove();
+		overlay.querySelector("#confirmYes").addEventListener("click", () => { resolve(true); cleanup(); });
+		overlay.querySelector("#confirmNo").addEventListener("click", () => { resolve(false); cleanup(); });
+	});
 }
 
 function renderList() {

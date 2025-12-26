@@ -10,22 +10,28 @@
 		crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<link rel="stylesheet" href="css/stile.css" />
 	<link rel="stylesheet" href="css/form.css" />
+	<link rel="icon" type="image/png" href="icons/favicon-96x96.png" sizes="96x96" />
+	<link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
+	<link rel="shortcut icon" href="icons/favicon.ico" />
+	<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+	<meta name="apple-mobile-web-app-title" content="Turnify" />
+	<link rel="manifest" href="icons/site.webmanifest" />
 </head>
 
 <body>
 	<div class="app-shell">
 		<header class="app-header">
 			<div class="brand">
-				<div class="brand-badge"><i class="fa-solid fa-rotate"></i></div>
 				<span>Turnify</span>
 			</div>
 			<nav class="app-nav">
 				<a class="nav-link" href="index.html"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
 				<a class="nav-link" href="ruoli.html"><i class="fa-solid fa-layer-group"></i>Ruoli</a>
-				<a class="nav-link" href="dipendenti.html"><i class="fa-solid fa-user-group"></i>Dipendenti</a>
 				<a class="nav-link" href="turni.html"><i class="fa-solid fa-business-time"></i>Turni</a>
-				<a class="nav-link" href="vincoli.html"><i class="fa-solid fa-scale-balanced"></i>Vincoli</a>
-				<a class="nav-link active" href="indisponibilità.html"><i class="fa-solid fa-calendar-times"></i>Indisponibilità</a>
+				<a class="nav-link" href="dipendenti.html"><i class="fa-solid fa-user-group"></i>Dipendenti</a>
+				<a class="nav-link active" href="indisponibilità.html"><i
+						class="fa-solid fa-calendar-times"></i>Indisponibilità</a>
+				<a class="nav-link" href="planning.html"><i class="fa-solid fa-calendar-check"></i>Planning</a>
 				<a class="nav-link" href="impostazioni.html"><i class="fa-solid fa-gear"></i>Impostazioni</a>
 			</nav>
 		</header>
@@ -46,7 +52,8 @@
 							<p class="card-description">Visualizza e gestisci le indisponibilità esistenti.</p>
 						</div>
 						<div class="form-actions">
-							<button class="button" id="addBtn"><i class="fa-solid fa-plus"></i>Aggiungi Indisponibilità</button>
+							<button class="button" id="addBtn"><i class="fa-solid fa-plus"></i>Aggiungi
+								Indisponibilità</button>
 							<button class="button secondary" id="togglePastBtn">Nascondi passate</button>
 						</div>
 					</div>
@@ -56,72 +63,79 @@
 			</section>
 		</main>
 
+		<div style="display:flex;justify-content:center;margin:2rem 0;">
+			<a href="https://pecoraroamal.github.io/Personal-Website/contatti.html" target="_blank" class="contact-btn">
+				<i class="fa-solid fa-envelope"></i> Contatti
+			</a>
+		</div>
 		<footer>Turnify · Pianificazione turni smart</footer>
+</body>
 
-		<div class="modal-overlay hidden" id="formModal">
-			<div class="modal-dialog">
-				<div class="card">
-					<div class="card-header">
-						<div>
-							<p class="card-title"><i class="fa-solid fa-plus"></i>Aggiungi/Modifica Indisponibilità</p>
-							<p class="card-description">Compila il form per creare una nuova indisponibilità o modificarne una esistente.</p>
-						</div>
-					</div>
-
-					<form id="indisponibilitaForm" class="form-grid two-columns">
-						<div class="form-field">
-							<label for="dipendente">Dipendente</label>
-							<select id="dipendente" required>
-								<option value="">Seleziona dipendente</option>
-							</select>
-						</div>
-
-						<div class="form-field">
-							<label for="tipo">Tipo di Indisponibilità</label>
-							<select id="tipo" required>
-								<option value="">Seleziona tipo</option>
-								<option value="ferie">Ferie</option>
-								<option value="permessi">Permessi</option>
-								<option value="malattia">Malattia</option>
-								<option value="indisponibilità">Indisponibilità</option>
-							</select>
-						</div>
-
-						<div class="form-field">
-							<label for="dataInizio">Data Inizio</label>
-							<input type="date" id="dataInizio" required />
-						</div>
-
-						<div class="form-field">
-							<label for="oraInizio">Ora Inizio (opzionale)</label>
-							<input type="time" id="oraInizio" />
-						</div>
-
-						<div class="form-field">
-							<label for="dataFine">Data Fine</label>
-							<input type="date" id="dataFine" required />
-						</div>
-
-						<div class="form-field">
-							<label for="oraFine">Ora Fine (opzionale)</label>
-							<input type="time" id="oraFine" />
-						</div>
-
-						<div class="form-field full-width">
-							<label for="note">Note (opzionale)</label>
-							<textarea id="note" rows="3"></textarea>
-						</div>
-
-						<div class="form-actions full-width">
-							<button type="submit" class="button"><i class="fa-solid fa-save"></i>Salva</button>
-							<button type="button" id="cancelBtn" class="button secondary"><i class="fa-solid fa-times"></i>Annulla</button>
-						</div>
-					</form>
+<div class="modal-overlay hidden" id="formModal">
+	<div class="modal-dialog">
+		<div class="card">
+			<div class="card-header">
+				<div>
+					<p class="card-title"><i class="fa-solid fa-plus"></i>Aggiungi/Modifica Indisponibilità</p>
+					<p class="card-description">Compila il form per creare una nuova indisponibilità o modificarne una
+						esistente.</p>
 				</div>
 			</div>
+
+			<form id="indisponibilitaForm" class="form-grid two-columns">
+				<div class="form-field">
+					<label for="dipendente">Dipendente</label>
+					<select id="dipendente" required>
+						<option value="">Seleziona dipendente</option>
+					</select>
+				</div>
+
+				<div class="form-field">
+					<label for="tipo">Tipo di Indisponibilità</label>
+					<select id="tipo" required>
+						<option value="">Seleziona tipo</option>
+						<option value="ferie">Ferie</option>
+						<option value="permessi">Permessi</option>
+						<option value="malattia">Malattia</option>
+						<option value="indisponibilità">Indisponibilità</option>
+					</select>
+				</div>
+
+				<div class="form-field">
+					<label for="dataInizio">Data Inizio</label>
+					<input type="date" id="dataInizio" required />
+				</div>
+
+				<div class="form-field">
+					<label for="oraInizio">Ora Inizio (opzionale)</label>
+					<input type="time" id="oraInizio" />
+				</div>
+
+				<div class="form-field">
+					<label for="dataFine">Data Fine</label>
+					<input type="date" id="dataFine" required />
+				</div>
+
+				<div class="form-field">
+					<label for="oraFine">Ora Fine (opzionale)</label>
+					<input type="time" id="oraFine" />
+				</div>
+
+				<div class="form-field full-width">
+					<label for="note">Note (opzionale)</label>
+					<textarea id="note" rows="3"></textarea>
+				</div>
+
+				<div class="form-actions full-width">
+					<button type="submit" class="button"><i class="fa-solid fa-save"></i>Salva</button>
+					<button type="button" id="cancelBtn" class="button secondary"><i
+							class="fa-solid fa-times"></i>Annulla</button>
+				</div>
+			</form>
 		</div>
 	</div>
+</div>
+</div>
 
-	<script src="js/indisponibilità.js"></script>
-</body>
+<script src="js/indisponibilità.js"></script>
 </html>

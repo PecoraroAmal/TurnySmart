@@ -45,14 +45,15 @@ const guideLinks = [
 
 const simulationConfig = {
 	roles: [
-		{ id: 1, nome: "Store Delivery Mattina", colore: "#a322eeff", minDipendenti: 1, maxDipendenti: 2, livello: 1 },
-		{ id: 2, nome: "Store Delivery Pomeriggio", colore: "#0ea5e9", minDipendenti: 1, maxDipendenti: 2, livello: 1 },
-		{ id: 3, nome: "Sniper", colore: "#ef4444", minDipendenti: 1, maxDipendenti: 1, livello: 2 },
-		{ id: 4, nome: "Carrista", colore: "#f59e0b", minDipendenti: 1, maxDipendenti: 2, livello: 3 },
+		{ id: 1, nome: "Cameriere", colore: "#4ade80", minDipendenti: 2, maxDipendenti: 4, livello: 1 },
+		{ id: 2, nome: "Cuoco", colore: "#f59e0b", minDipendenti: 2, maxDipendenti: 3, livello: 2 },
+		{ id: 3, nome: "Aiuto Cuoco", colore: "#818cf8", minDipendenti: 1, maxDipendenti: 2, livello: 1 },
+		{ id: 4, nome: "Pizzaiolo", colore: "#ef4444", minDipendenti: 1, maxDipendenti: 2, livello: 2 },
+		{ id: 5, nome: "Responsabile di sala", colore: "#a322eeff", minDipendenti: 1, maxDipendenti: 1, livello: 3 },
 	],
 	shifts: [
-		{ id: 1, nome: "Mattina", colore: "#4ade80", inizio: "06:00", fine: "14:30", ruoliPossibili: [3, 1, 4] },
-		{ id: 2, nome: "Pomeriggio", colore: "#818cf8", inizio: "13:30", fine: "22:00", ruoliPossibili: [3, 2, 4] },
+		{ id: 1, nome: "Pranzo", colore: "#60a5fa", inizio: "10:00", fine: "15:30", ruoliPossibili: [1,2,3,4,5] },
+		{ id: 2, nome: "Cena", colore: "#a78bfa", inizio: "17:30", fine: "23:30", ruoliPossibili: [1,2,3,4,5] },
 	],
 	defaultVincoli: {
 		riposoMinimoOre: 11,
@@ -62,16 +63,16 @@ const simulationConfig = {
 		perDipendente: {},
 	},
 	employeeNames: [
-		"Alessio Moretti",
-		"Beatrice Villa",
-		"Carlo Gentile",
-		"Davide Conti",
-		"Elena Fabbri",
-		"Fabio Leone",
-		"Giulia Serra",
-		"Hamed Saidi",
-		"Irene Bellini",
-		"Jacopo Ferri",
+		"Mario Rossi",
+		"Luca Bianchi",
+		"Giulia Verdi",
+		"Francesca Neri",
+		"Alessandro Gallo",
+		"Sara Fontana",
+		"Paolo Ricci",
+		"Elena Greco",
+		"Simone Costa",
+		"Martina Riva",
 	],
 };
 
@@ -183,61 +184,76 @@ function renderGuide() {
 function buildSimulationData() {
 	const dipendenti = [];
 
-	// 4 dipendenti: Store Delivery Mattina, Store Delivery Pomeriggio, Sniper, Carrista
-	for (let i = 0; i < 4; i++) {
-		const ruoli = [1, 2, 3, 4];
-		let esperienza = 1;
-		if (ruoli.includes(3)) esperienza = 2;
-		if (ruoli.includes(4)) esperienza = 3;
+	// 2 responsabili di sala
+	for (let i = 0; i < 2; i++) {
 		dipendenti.push({
 			id: i + 1,
 			nome: simulationConfig.employeeNames[i],
-			ruoli: ruoli, // Store Delivery Mattina, Store Delivery Pomeriggio, Sniper, Carrista
-			turni: [1, 2], // Mattina, Pomeriggio
-			mezzo: ruoli.includes(4), // Carrista ha il mezzo
+			ruoli: [5, 1], // Responsabile di sala, Cameriere
+			turni: [1, 2], // Pranzo, Cena
 			oreSettimanali: 40,
 			oreGiornaliere: 8,
-			esperienza: esperienza,
+			esperienza: 3,
 			indisponibilita: [],
 			feriePermessi: [],
 		});
 	}
 
-	// 2 dipendenti: Store Delivery Mattina, Store Delivery Pomeriggio, Sniper
+	// 2 pizzaioli
+	for (let i = 2; i < 4; i++) {
+		dipendenti.push({
+			id: i + 1,
+			nome: simulationConfig.employeeNames[i],
+			ruoli: [4], // Pizzaiolo
+			turni: [2], // Cena
+			oreSettimanali: 40,
+			oreGiornaliere: 8,
+			esperienza: 2,
+			indisponibilita: [],
+			feriePermessi: [],
+		});
+	}
+
+	// 2 cuochi
 	for (let i = 4; i < 6; i++) {
-		const ruoli = [1, 2, 3];
-		let esperienza = 1;
-		if (ruoli.includes(3)) esperienza = 2;
-		if (ruoli.includes(4)) esperienza = 3;
 		dipendenti.push({
 			id: i + 1,
 			nome: simulationConfig.employeeNames[i],
-			ruoli: ruoli, // Store Delivery Mattina, Store Delivery Pomeriggio, Sniper
-			turni: [1, 2], // Mattina, Pomeriggio
-			mezzo: ruoli.includes(4), // Carrista ha il mezzo
+			ruoli: [2], // Cuoco
+			turni: [1, 2], // Pranzo, Cena
 			oreSettimanali: 40,
 			oreGiornaliere: 8,
-			esperienza: esperienza,
+			esperienza: 2,
 			indisponibilita: [],
 			feriePermessi: [],
 		});
 	}
 
-	// 4 dipendenti: Store Delivery Mattina, Store Delivery Pomeriggio
-	for (let i = 6; i < 10; i++) {
-		const ruoli = [1, 2];
-		let esperienza = 1;
-		if (ruoli.includes(3)) esperienza = 2;
-		if (ruoli.includes(4)) esperienza = 3;
+	// 2 aiuto cuochi
+	for (let i = 6; i < 8; i++) {
 		dipendenti.push({
 			id: i + 1,
 			nome: simulationConfig.employeeNames[i],
-			ruoli: ruoli, // Store Delivery Mattina, Store Delivery Pomeriggio
-			turni: [1, 2], // Mattina, Pomeriggio
-			mezzo: ruoli.includes(4), // Carrista ha il mezzo
+			ruoli: [3], // Aiuto Cuoco
+			turni: [1, 2], // Pranzo, Cena
 			oreSettimanali: 40,
 			oreGiornaliere: 8,
-			esperienza: esperienza,
+			esperienza: 1,
+			indisponibilita: [],
+			feriePermessi: [],
+		});
+	}
+
+	// 2 camerieri
+	for (let i = 8; i < 10; i++) {
+		dipendenti.push({
+			id: i + 1,
+			nome: simulationConfig.employeeNames[i],
+			ruoli: [1], // Cameriere
+			turni: [1, 2], // Pranzo, Cena
+			oreSettimanali: 40,
+			oreGiornaliere: 8,
+			esperienza: 1,
 			indisponibilita: [],
 			feriePermessi: [],
 		});

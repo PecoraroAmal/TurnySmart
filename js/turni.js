@@ -190,21 +190,22 @@ function renderShiftList() {
 
 	shiftDom.listHost.innerHTML = shifts
 		.map((shift) => {
-			const textColor = getReadableTextColor(shift.colore);
-			const descColor = textColor === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.75)";
 			const rolesLabel = shift.ruoliPossibili
 				.map((roleId) => roleMap.get(roleId)?.nome || `Role #${roleId}`)
 				.join(", ");
 			return `
-				<article class="card" data-id="${shift.id}" style="background:${shift.colore};color:${textColor};">
-					<div class="card-header">
-						<div>
-							  <p class="card-title"><span class="shift-pill" style="--dot-color:${shift.colore};color:${textColor};background:${textColor === "#ffffff" ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.25)"};">${shift.nome}</span></p>
-							<p class="card-description" style="color:${descColor}">${shift.inizio} - ${shift.fine}</p>
-							<p class="muted" style="color:${descColor}">Ruoli: ${rolesLabel}</p>
+				<article class="card metric-link" data-id="${shift.id}">
+					<div class="card-header" style="justify-content:space-between;align-items:center;">
+						<div style="display:flex;align-items:center;gap:12px;">
+							<span class="shift-pill" style="--dot-color:${shift.colore};margin-right:10px;"></span>
+							<div style="display:flex;flex-direction:column;">
+								<span style="font-size:1.1rem;font-weight:600;color:#000;">${shift.nome}</span>
+								<span class="card-description" style="color:#000;">${shift.inizio} - ${shift.fine}</span>
+								<span class="muted" style="color:#000;">Ruoli: ${rolesLabel}</span>
+							</div>
 						</div>
-						<div class="list-inline">
-							<button class="button secondary" data-action="edit"><i class="fa-solid fa-pen"></i></button>
+						<div class="list-inline" style="gap:8px;">
+							<button class="button secondary" data-action="edit"><i class="fa-solid fa-pen"></i> Modifica</button>
 							<button class="button danger" data-action="delete"><i class="fa-solid fa-trash"></i></button>
 						</div>
 					</div>

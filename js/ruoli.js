@@ -159,7 +159,7 @@ function handleSubmit(event) {
 
 function renderRoles() {
 	const db = loadDb();
-	const roles = db.ruoli.sort((a, b) => a.livello - b.livello);
+	const roles = db.ruoli.sort((a, b) => b.livello - a.livello);
 
 	selectors.counter.textContent = `${roles.length} ruoli`;
 	selectors.listHost.innerHTML = roles
@@ -167,20 +167,23 @@ function renderRoles() {
 			(role) => {
 				const textColor = getReadableTextColor(role.colore);
 				const descColor = textColor === "#ffffff" ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.75)";
-				return `
-				<article class="card" data-id="${role.id}" style="background:${role.colore};color:${textColor};">
-					<div class="card-header">
-						<div>
-							  <p class="card-title"><span class="role-pill" style="--dot-color:${role.colore};color:${textColor};background:${textColor === "#ffffff" ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.25)"};">${role.nome}</span></p>
-							<p class="card-description" style="color:${descColor}">Livello ${role.livello} · Min ${role.minDipendenti} · Max ${role.maxDipendenti}</p>
-						</div>
-						<div class="list-inline">
-							<button class="button secondary" data-action="edit"><i class="fa-solid fa-pen"></i></button>
-							<button class="button danger" data-action="delete"><i class="fa-solid fa-trash"></i></button>
-						</div>
-					</div>
-				</article>
-			`;
+				   return `
+				   <article class="card role-neutral metric-link" data-id="${role.id}">
+					   <div class="card-header" style="justify-content:space-between;align-items:center;">
+						   <div style="display:flex;align-items:center;gap:12px;">
+							   <span class="role-pill" style="--dot-color:${role.colore};margin-right:10px;"></span>
+							   <div style="display:flex;flex-direction:column;">
+								   <span style="font-size:1.1rem;font-weight:600;color:#000;">${role.nome}</span>
+								   <span class="card-description" style="color:#000;">Livello ${role.livello} · Min ${role.minDipendenti} · Max ${role.maxDipendenti}</span>
+							   </div>
+						   </div>
+						   <div class="list-inline" style="gap:8px;">
+							   <button class="button secondary" data-action="edit"><i class="fa-solid fa-pen"></i> Modifica</button>
+							   <button class="button danger" data-action="delete"><i class="fa-solid fa-trash"></i></button>
+						   </div>
+					   </div>
+				   </article>
+			   `;
 			}
 		)
 		.join(" ");
@@ -194,17 +197,31 @@ function handleListClick(event) {
 	if (!actionButton) return;
 
 	const card = actionButton.closest("article[data-id]");
-	const roleId = Number(card?.dataset.id);
-	if (!roleId) return;
+	if (!card) {
+		console.warn("Nessun article[data-id] trovato per il bottone azione", actionButton);
+		return;
+	}
+	const roleId = Number(card.dataset.id);
+	if (!roleId) {
+		console.warn("ID ruolo non trovato o non valido", card.dataset.id);
+		return;
+	}
 
 	if (actionButton.dataset.action === "delete") {
 		showConfirm("Eliminare il ruolo?").then((ok) => {
 			if (!ok) return;
 			const db = loadDb();
+			const before = db.ruoli.length;
 			db.ruoli = db.ruoli.filter((role) => role.id !== roleId);
+			const after = db.ruoli.length;
 			saveDb(db);
 			renderRoles();
 			showRolesMessage("Ruolo eliminato.", "info");
+			if (before === after) {
+				console.warn("Nessun ruolo eliminato: forse l'ID non corrispondeva a nessun ruolo", roleId);
+			}
+		}).catch((err) => {
+			console.error("Errore nella conferma eliminazione ruolo", err);
 		});
 		return;
 	}
@@ -215,6 +232,8 @@ function handleListClick(event) {
 		if (role) {
 			clearRolesMessage();
 			toggleFormPanel(true, role);
+		} else {
+			console.warn("Ruolo non trovato per modifica", roleId);
 		}
 	}
 }
@@ -231,23 +250,3 @@ function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
-
-function showConfirm(message) {
-	return new Promise((resolve) => {
-		const overlay = document.createElement("div");
-		overlay.className = "confirm-overlay";
-		overlay.innerHTML = `
-			<div class="confirm-dialog">
-				<h2>Conferma</h2>
-				<p>${message}</p>
-				<div class="confirm-actions">
-					<button class="button danger" id="confirmYes"><i class="fa-solid fa-check"></i>Conferma</button>
-					<button class="button secondary" id="confirmNo"><i class="fa-solid fa-rotate-left"></i>Annulla</button>
-				</div>
-			</div>`;
-		document.body.appendChild(overlay);
-		const cleanup = () => overlay.remove();
-		overlay.querySelector("#confirmYes").addEventListener("click", () => { resolve(true); cleanup(); });
-		overlay.querySelector("#confirmNo").addEventListener("click", () => { resolve(false); cleanup(); });
-	});
-}

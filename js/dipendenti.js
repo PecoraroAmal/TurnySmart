@@ -146,12 +146,7 @@ function renderEmployeeForm(employee) {
 				<div class="checkbox-group">${shiftsMarkup}</div>
 			</div>
 
-			<div class="form-field">
-				<label class="checkbox-chip">
-					<input type="checkbox" name="mezzo" ${employee?.mezzo ? "checked" : ""}>
-					<span>Ha il mezzo</span>
-				</label>
-			</div>
+
 
 			<div class="form-actions">
 				<button class="button" type="submit">
@@ -183,8 +178,6 @@ function handleEmployeeSubmit(event) {
 
 	const selectedRoles = formData.getAll("ruoli").map((role) => Number(role));
 	const selectedShifts = formData.getAll("turni").map((shift) => Number(shift));
-	const hasMezzo = formData.has("mezzo");
-
 	const payload = {
 		id: formData.get("id") ? Number(formData.get("id")) : Date.now(),
 		nome: name,
@@ -193,7 +186,6 @@ function handleEmployeeSubmit(event) {
 		esperienza: Number(formData.get("esperienza")) || 3,
 		ruoli: selectedRoles,
 		turni: selectedShifts,
-		mezzo: hasMezzo,
 		feriePermessi: [],
 	};
 
@@ -251,7 +243,6 @@ function renderEmployeeList() {
 							<p class="card-description">Esperienza ${employee.esperienza} · ${employee.oreSettimanali}h/settimana · ${(employee.oreGiornaliere || 8).toString().replace('.', ',')}h/giorno</p>
 							<p class="muted">Ruoli: ${rolesLabel}</p>
 							<p class="muted">Turni: ${shiftsLabel}</p>
-							<p class="muted">Mezzo: ${employee.mezzo ? 'Sì' : 'No'}</p>
 						</div>
 						<div class="list-inline">
 							<button class="button secondary" data-action="edit"><i class="fa-solid fa-pen"></i></button>

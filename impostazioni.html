@@ -10,22 +10,28 @@
 		crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<link rel="stylesheet" href="css/stile.css" />
 	<link rel="stylesheet" href="css/form.css" />
+	<link rel="icon" type="image/png" href="icons/favicon-96x96.png" sizes="96x96" />
+	<link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
+	<link rel="shortcut icon" href="icons/favicon.ico" />
+	<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+	<meta name="apple-mobile-web-app-title" content="Turnify" />
+	<link rel="manifest" href="icons/site.webmanifest" />
 </head>
 
 <body>
 	<div class="app-shell">
 		<header class="app-header">
 			<div class="brand">
-				<div class="brand-badge"><i class="fa-solid fa-rotate"></i></div>
 				<span>Turnify</span>
 			</div>
 			<nav class="app-nav">
 				<a class="nav-link" href="index.html"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
 				<a class="nav-link" href="ruoli.html"><i class="fa-solid fa-layer-group"></i>Ruoli</a>
-				<a class="nav-link" href="dipendenti.html"><i class="fa-solid fa-user-group"></i>Dipendenti</a>
 				<a class="nav-link" href="turni.html"><i class="fa-solid fa-business-time"></i>Turni</a>
-				<a class="nav-link" href="vincoli.html"><i class="fa-solid fa-scale-balanced"></i>Vincoli</a>
-				<a class="nav-link" href="indisponibilità.html"><i class="fa-solid fa-calendar-times"></i>Indisponibilità</a>
+				<a class="nav-link" href="dipendenti.html"><i class="fa-solid fa-user-group"></i>Dipendenti</a>
+				<a class="nav-link" href="indisponibilità.html"><i
+						class="fa-solid fa-calendar-times"></i>Indisponibilità</a>
+				<a class="nav-link" href="planning.html"><i class="fa-solid fa-calendar-check"></i>Planning</a>
 				<a class="nav-link active" href="impostazioni.html"><i class="fa-solid fa-gear"></i>Impostazioni</a>
 			</nav>
 		</header>
@@ -33,7 +39,8 @@
 		<main class="page-content">
 			<section class="page-hero">
 				<h1>Backup e manutenzione</h1>
-				<p>Esporta o importa i dati salvati nel browser, azzera il database locale e consulta la guida rapida per
+				<p>Esporta o importa i dati salvati nel browser, azzera il database locale e consulta la guida rapida
+					per
 					utilizzare tutte le sezioni dell'applicazione.</p>
 			</section>
 
@@ -48,7 +55,8 @@
 							</div>
 						</div>
 						<div class="form-grid">
-							<button class="button" id="exportData"><i class="fa-solid fa-file-arrow-down"></i>Esporta dati</button>
+							<button class="button" id="exportData"><i class="fa-solid fa-file-arrow-down"></i>Esporta
+								dati</button>
 							<label class="button secondary" for="importData">
 								<i class="fa-solid fa-file-arrow-up"></i>
 								Importa dati
@@ -61,11 +69,13 @@
 						<div class="card-header">
 							<div>
 								<p class="card-title"><i class="fa-solid fa-trash"></i>Ripristino</p>
-								<p class="card-description">Rimuovi completamente ruoli, dipendenti, turni, vincoli e planning.</p>
+								<p class="card-description">Rimuovi completamente ruoli, dipendenti, turni, vincoli e
+									planning.</p>
 							</div>
 						</div>
 						<div class="form-grid">
-							<button class="button danger" id="resetAll"><i class="fa-solid fa-triangle-exclamation"></i>Pulisci
+							<button class="button danger" id="resetAll"><i
+									class="fa-solid fa-triangle-exclamation"></i>Pulisci
 								LocalStorage</button>
 						</div>
 					</div>
@@ -75,12 +85,15 @@
 					<div class="card-header">
 						<div>
 							<p class="card-title"><i class="fa-solid fa-wand-magic-sparkles"></i>Simulazione rapida</p>
-							<p class="card-description">Popola automaticamente ruoli, turni e 30 dipendenti per testare il planning.</p>
+							<p class="card-description">Popola automaticamente ruoli, turni e 30 dipendenti per testare
+								il planning.</p>
 						</div>
 					</div>
 					<div class="form-grid">
-						<button class="button" id="seedSimulation"><i class="fa-solid fa-meteor"></i>Genera dataset demo</button>
-						<p class="helper-text">La simulazione sovrascrive i dati correnti e pulisce l'eventuale planning salvato.</p>
+						<button class="button" id="seedSimulation"><i class="fa-solid fa-meteor"></i>Genera dataset
+							demo</button>
+						<p class="helper-text">La simulazione sovrascrive i dati correnti e pulisce l'eventuale planning
+							salvato.</p>
 					</div>
 				</div>
 
@@ -96,10 +109,13 @@
 			</section>
 		</main>
 
+		<div style="display:flex;justify-content:center;margin:2rem 0;">
+			<a href="https://pecoraroamal.github.io/Personal-Website/contatti.html" target="_blank" class="contact-btn">
+				<i class="fa-solid fa-envelope"></i> Contatti
+			</a>
+		</div>
 		<footer>Turnify · Pianificazione turni smart</footer>
 	</div>
-
 	<script src="js/impostazioni.js" defer></script>
 </body>
-
 </html>

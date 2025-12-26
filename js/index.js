@@ -64,26 +64,25 @@ function renderMetrics() {
 	if (!dashboardDom.metricsHost) return;
 	const db = readDatabase();
 	const indisponibilita = readIndisponibilita();
-	const cards = [
-		{ label: "Dipendenti", value: db.dipendenti.length, icon: "fa-user-group" },
-		{ label: "Ruoli", value: db.ruoli.length, icon: "fa-layer-group" },
-		{ label: "Turni", value: db.turni.length, icon: "fa-business-time" },
-		{ label: "Indisponibilità", value: indisponibilita.length, icon: "fa-calendar-times" },
-		{ label: "Vincoli personalizzati", value: Object.keys(db.vincoli?.perDipendente || {}).length, icon: "fa-scale-balanced" },
-	];
+	       const cards = [
+		       { label: "Dipendenti", value: db.dipendenti.length, icon: "fa-user-group", link: "dipendenti.html" },
+		       { label: "Ruoli", value: db.ruoli.length, icon: "fa-layer-group", link: "ruoli.html" },
+		       { label: "Turni", value: db.turni.length, icon: "fa-business-time", link: "turni.html" },
+		       { label: "Indisponibilità", value: indisponibilita.length, icon: "fa-calendar-times", link: "indisponibilità.html" },
+	       ];
 
-	dashboardDom.metricsHost.innerHTML = cards
-		.map(
-			(card) => `
-				<div class="card">
-					<div class="card-title" style="color:#000">
-						<i class="fa-solid ${card.icon}"></i>${card.label}
-					</div>
-					<p style="font-size:2rem;font-weight:700;color:#000;">${card.value}</p>
-				</div>
-			`
-		)
-		.join(" ");
+	       dashboardDom.metricsHost.innerHTML = cards
+		       .map(
+			       (card) => `
+				       <a class="card metric-link" href="${card.link}">
+					       <div class="card-title" style="color:#000">
+						       <i class="fa-solid ${card.icon}"></i>${card.label}
+					       </div>
+					       <p style="font-size:2rem;font-weight:700;color:#000;">${card.value}</p>
+				       </a>
+			       `
+		       )
+		       .join("");
 }
 
 function setPlanningStatus(message, type = "ok") {
@@ -148,57 +147,6 @@ function formatHoursLabel(minutes, expectedHours) {
 	return ` (${Number(hours.toFixed(1))}/${exp}h)`;
 }
 
-function generatePlanning() {
-	// Use the planning from planning.js
-	if (!window.planning) {
-		showDashboardMessage("Planning non disponibile.", "error");
-		return;
-	}
-
-	const db = readDatabase();
-	const startDate = dashboardDom.planningStart.value || getDefaultStartDate();
-	const dates = createDateRange(startDate, 5); // 5 days
-
-	const convertedPlanning = {};
-	dates.forEach(date => {
-		const dayName = giornoLabel[date.getDay()];
-		const dayData = window.planning[dayName.charAt(0).toUpperCase() + dayName.slice(1)];
-		if (dayData) {
-			const assignments = [];
-			['Mattina', 'Pomeriggio'].forEach(shift => {
-				const shiftData = dayData[shift];
-				Object.keys(shiftData).forEach(role => {
-					shiftData[role].forEach(name => {
-						const emp = db.dipendenti.find(e => e.nome === name);
-						if (emp) {
-							const turno = db.turni.find(t => t.nome === shift);
-							assignments.push({
-								dipendente: name,
-								dipendenteId: emp.id,
-								turno: shift,
-								ruolo: role,
-								inizio: turno ? turno.inizio : '06:00',
-								fine: turno ? turno.fine : '14:30',
-								colore: turno ? turno.colore : '#000000'
-							});
-						}
-					});
-				});
-			});
-			convertedPlanning[date.toISOString().split('T')[0]] = assignments;
-		}
-	});
-
-	const planningData = {
-		startDate,
-		planning: convertedPlanning
-	};
-
-	savePlanning(planningData);
-	renderPlanningMatrix(planningData);
-	setPlanningStatus("Planning generato", "ok");
-	showDashboardMessage("Planning generato con successo.", "success");
-}
 function downloadPlanning() {
 	const stored = loadPlanning();
 	if (!stored) {
@@ -370,9 +318,10 @@ function initDashboard() {
 	ensureStartDate();
 	renderMetrics();
 	renderPlanningMatrix();
-	dashboardDom.generateBtn?.addEventListener("click", () => generatePlanning());
-	dashboardDom.downloadBtn?.addEventListener("click", downloadPlanning);
-	dashboardDom.clearBtn?.addEventListener("click", clearPlanning);
+	// Rimuovi i bottoni di generazione, download e pulizia planning
+	if (dashboardDom.generateBtn) dashboardDom.generateBtn.style.display = "none";
+	if (dashboardDom.downloadBtn) dashboardDom.downloadBtn.style.display = "none";
+	if (dashboardDom.clearBtn) dashboardDom.clearBtn.style.display = "none";
 }
 
 document.addEventListener("DOMContentLoaded", initDashboard);
